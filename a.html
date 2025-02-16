@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gestione Palestra</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Sidebar laterale -->
+  <aside id="sidebar">
+    <h2>Menu</h2>
+    <ul>
+      <li><a href="#" onclick="showPage('home')">Home</a></li>
+      <li><a href="#" onclick="showPage('palestra')">Palestra</a></li>
+      <li><a href="#" onclick="showPage('design')">Design Palestra</a></li>
+      <li><a href="#" onclick="showPage('avatar')">Avatar</a></li>
+      <li><a href="#" onclick="showPage('schede')">Schede</a></li>
+      <li><a href="#" onclick="showPage('admin')">Admin</a></li>
+    </ul>
+  </aside>
+
+  <!-- Contenuto principale -->
+  <main id="main-content">
+    <!-- Home -->
+    <section id="home" class="page">
+      <h1>Benvenuto in Training Machines</h1>
+      <p>Seleziona la tua palestra:</p>
+      <div class="gym-selection">
+        <button onclick="selectGym('GymA')">Palestra A</button>
+        <button onclick="selectGym('GymB')">Palestra B</button>
+        <button onclick="selectGym('GymC')">Palestra C</button>
+      </div>
+    </section>
+
+    <!-- Palestra -->
+    <section id="palestra" class="page hidden">
+      <h1>Palestra</h1>
+      <div id="room" class="room">
+        <div class="door ingresso">Ingresso</div>
+        <div class="door uscita">Uscita</div>
+      </div>
+      <div class="gym-controls">
+        <button onclick="addMachineAtRandom()">Aggiungi Macchina Dinamica</button>
+        <button onclick="deleteAllMachines()">Elimina Tutte le Macchine</button>
+        <button onclick="openModal('mapModal')">Imposta Planimetria</button>
+        <button onclick="zoomIn()">Zoom In</button>
+        <button onclick="zoomOut()">Zoom Out</button>
+        <button id="toggleRoomEditButton" onclick="toggleRoomEditing()">Modifica Forma Stanza</button>
+      </div>
+    </section>
+
+    <!-- Design Palestra -->
+    <section id="design" class="page hidden">
+      <h1>Design Palestra</h1>
+      <p>Modifica la forma della planimetria trascinando i pallini e poi salva il design.</p>
+      <div id="design-room" class="room">
+        <div class="door ingresso">Ingresso</div>
+        <div class="door uscita">Uscita</div>
+      </div>
+      <button onclick="saveRoomDesign()">Salva Design Palestra</button>
+    </section>
+
+    <!-- Avatar -->
+    <section id="avatar" class="page hidden">
+      <h1>Avatar Fitness</h1>
+      <div class="avatar-container">
+        <svg id="avatar-svg" viewBox="0 0 200 400"></svg>
+      </div>
+      <div class="controls">
+        <label for="gender">Genere:</label>
+        <select id="gender">
+          <option value="male">Maschio</option>
+          <option value="female">Femmina</option>
+        </select>
+        <label for="muscle">Muscoli:</label>
+        <input type="range" id="muscle" min="0" max="100" value="50">
+      </div>
+    </section>
+
+    <!-- Schede -->
+    <section id="schede" class="page hidden">
+      <h1>Schede Allenamento</h1>
+      <div id="schede-list"></div>
+      <button onclick="refreshSchede()">Aggiorna Schede</button>
+    </section>
+
+    <!-- Admin -->
+    <section id="admin" class="page hidden">
+      <h1>Admin</h1>
+      <label>
+        <input type="checkbox" id="adminModeSwitch" onchange="toggleAdminMode()">
+        Attiva Admin Mode
+      </label>
+      <h2>Aggiungi Macchinari Fissi</h2>
+      <div id="machine-type-list"></div>
+      <h2>Aggiungi Esercizio Globale a un Tipo di Macchina</h2>
+      <label>Tipo Macchina:
+        <select id="machineTypeSelect"></select>
+      </label>
+      <button onclick="openModal('addGlobalExerciseModal')">Aggiungi Esercizio Globale</button>
+    </section>
+  </main>
+
+  <!-- MODALI -->
+  <!-- Modal per impostare lo sfondo della planimetria -->
+  <div id="mapModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal('mapModal')">&times;</span>
+      <h2>Imposta Planimetria</h2>
+      <input type="text" id="mapUrl" placeholder="URL dell'immagine">
+      <button onclick="setMapBackground()">Imposta</button>
+    </div>
+  </div>
+
+  <!-- Modal per aggiungere una scheda (esercizio) -->
+  <div id="addCardModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal('addCardModal')">&times;</span>
+      <h2>Aggiungi Scheda</h2>
+      <table>
+        <tr>
+          <th>Nome Esercizio</th>
+          <th>Ripetizioni</th>
+          <th>Peso</th>
+        </tr>
+        <tr>
+          <td><input type="text" id="card-name" placeholder="Nome Esercizio"></td>
+          <td><input type="number" id="repetitions" placeholder="Ripetizioni"></td>
+          <td><input type="number" id="weight" placeholder="Peso"></td>
+        </tr>
+      </table>
+      <button onclick="addCardToMachine()">Aggiungi</button>
+    </div>
+  </div>
+
+  <!-- Modal per dettagli macchinario fisso -->
+  <div id="machineDetailModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal('machineDetailModal')">&times;</span>
+      <h2>Dettagli Macchinario</h2>
+      <p id="machineDetailName"></p>
+      <div id="attachedCardDetails">Nessuna scheda allegata</div>
+      <button onclick="openCardSelectionModal()">Seleziona Scheda dalla Lista</button>
+      <button onclick="openAddCardModalForFixed()">Aggiungi Nuova Scheda</button>
+    </div>
+  </div>
+
+  <!-- Modal per selezione scheda globale -->
+  <div id="cardSelectionModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal('cardSelectionModal')">&times;</span>
+      <h2>Seleziona Scheda</h2>
+      <div id="globalCardList"></div>
+    </div>
+  </div>
+
+  <!-- Modal per aggiungere esercizio globale -->
+  <div id="addGlobalExerciseModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal('addGlobalExerciseModal')">&times;</span>
+      <h2>Aggiungi Esercizio Globale</h2>
+      <label>Nome Esercizio:
+        <input type="text" id="globalExerciseName">
+      </label>
+      <label>Ripetizioni:
+        <input type="number" id="globalExerciseReps">
+      </label>
+      <label>Peso:
+        <input type="number" id="globalExerciseWeight">
+      </label>
+      <button onclick="addGlobalExercise()">Aggiungi</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
